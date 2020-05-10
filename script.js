@@ -42,7 +42,7 @@ function evaluatePosfixExpression(expression) {
       // extract two digits
       let first = opStack.pop();
       let second = opStack.pop();
-      if (!first || !second) return 'Error';
+      if (first === undefined || second === undefined) return 'Error';
       let res = operate(item, first, second);
       if (res != undefined) {
         opStack.push(res);
@@ -68,7 +68,7 @@ function truncateZeros(strNumber) {
   if (strNumber.length == 1) {
     return strNumber;
   }
-  return strNumber.replace(/^0+/g, '');
+  return strNumber.replace(/^0{1}/g, '');
 }
 
 function round(value) {
@@ -86,6 +86,7 @@ const inputField = document.querySelector("#input-field p");
 const digits = Array.from(document.getElementsByClassName('digit'));
 const operations = Array.from(document.getElementsByClassName('operation'));
 const equalNode = document.querySelector('.equal');
+const dotButton = document.querySelector('.dot');
 const DIGIT_LIMIT = 13;
 let firstOperand = true;
 let first = "0";
@@ -100,9 +101,9 @@ digits.forEach(digit => {
       return;
     }
     if (firstOperand) {
-      first = first + e.target.textContent;
+      first = truncateZeros(first + e.target.textContent);
     } else {
-      second = second + e.target.textContent;
+      second = truncateZeros(second + e.target.textContent);
     }
     inputField.textContent = newContent;
   });
@@ -126,10 +127,10 @@ operations.forEach(operation => {
   });
 });
 
+
 equalNode.addEventListener('click', e => {
   if (currentOperation) {
     const expr = `${first} ${currentOperation} ${second}`;
-    console.log(`Expression: ` + expr);
     const value = round(evaluatePosfixExpression(convertFromInfixToPosfix(expr)));
     first = checkLimit(`${value}`)
     second = '0';
@@ -139,4 +140,15 @@ equalNode.addEventListener('click', e => {
     return;
   }
   inputField.textContent = first;
+});
+
+dotButton.addEventListener('click', e => {
+  if (!inputField.textContent.includes('.')) {
+    inputField.textContent += '.';
+    if (firstOperand) {
+      if (!first.includes('.')) first += '.';
+    } else {
+      if (!second.includes('.')) second += '.';
+    }
+  }
 });

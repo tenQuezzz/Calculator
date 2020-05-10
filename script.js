@@ -152,3 +152,11 @@ dotButton.addEventListener('click', e => {
     }
   }
 });
+
+document.querySelector('.clear').addEventListener('click', e => {
+  first = '0';
+  second = '0';
+  firstOperand = true;
+  currentOperation = undefined;
+  inputField.textContent = first;
+});

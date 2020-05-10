@@ -59,10 +59,13 @@ function operate(operation, lhs, rhs) {
     case "+": return rhs + lhs;
     case "-": return rhs - lhs;
     case "*": return rhs * lhs;
-    case "/": return rhs / lhs;
+    case "/":
+      if (lhs == 0) return undefined;
+      return rhs / lhs;
     default: return undefined;
   }
 }
+
 
 function truncateZeros(strNumber) {
   if (strNumber.length == 1) {
@@ -82,19 +85,15 @@ function checkLimit(strValue) {
   return strValue;
 }
 
-const inputField = document.querySelector("#input-field p");
-const digits = Array.from(document.getElementsByClassName('digit'));
-const operations = Array.from(document.getElementsByClassName('operation'));
-const equalNode = document.querySelector('.equal');
-const dotButton = document.querySelector('.dot');
-const DIGIT_LIMIT = 13;
-let firstOperand = true;
-let first = "0";
-let second = "0";
-let expression = "";
-let currentOperation = undefined;
+function resetUI() {
+  first = '0';
+  second = '0';
+  firstOperand = true;
+  currentOperation = undefined;
+  inputField.textContent = first;
+}
 
-digits.forEach(digit => {
+Array.from(document.getElementsByClassName('digit')).forEach(digit => {
   digit.addEventListener("click", e => {
     const newContent = truncateZeros(inputField.textContent + e.target.textContent);
     if (newContent.length > DIGIT_LIMIT) {
@@ -109,7 +108,7 @@ digits.forEach(digit => {
   });
 });
 
-operations.forEach(operation => {
+Array.from(document.getElementsByClassName('operation')).forEach(operation => {
   operation.addEventListener("click", e => {
     let op = e.target.textContent;
     if (firstOperand) {
@@ -128,10 +127,16 @@ operations.forEach(operation => {
 });
 
 
-equalNode.addEventListener('click', e => {
+document.querySelector('.equal').addEventListener('click', e => {
   if (currentOperation) {
     const expr = `${first} ${currentOperation} ${second}`;
-    const value = round(evaluatePosfixExpression(convertFromInfixToPosfix(expr)));
+    const res = evaluatePosfixExpression(convertFromInfixToPosfix(expr));
+    if (res === 'Error') {
+      resetUI();
+      alert('Error happened during evaluation!');
+      return;
+    }
+    const value = round(res);
     first = checkLimit(`${value}`)
     second = '0';
     currentOperation = undefined;
@@ -142,7 +147,7 @@ equalNode.addEventListener('click', e => {
   inputField.textContent = first;
 });
 
-dotButton.addEventListener('click', e => {
+document.querySelector('.dot').addEventListener('click', e => {
   if (!inputField.textContent.includes('.')) {
     inputField.textContent += '.';
     if (firstOperand) {
@@ -153,10 +158,12 @@ dotButton.addEventListener('click', e => {
   }
 });
 
-document.querySelector('.clear').addEventListener('click', e => {
-  first = '0';
-  second = '0';
-  firstOperand = true;
-  currentOperation = undefined;
-  inputField.textContent = first;
-});
+document.querySelector('.clear').addEventListener("click", resetUI);
+
+const inputField = document.querySelector("#input-field p");
+const DIGIT_LIMIT = 13;
+let firstOperand = true;
+let first = "0";
+let second = "0";
+let expression = "";
+let currentOperation = undefined;
